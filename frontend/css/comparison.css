@@ -1,0 +1,130 @@
+/* ═══════════════════════════════════════════════════════════════════
+   comparison.css — Comparison table + chart container
+   ═══════════════════════════════════════════════════════════════════ */
+
+.comparison-section {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  animation: fadeIn 300ms ease forwards;
+}
+
+.comparison-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.comparison-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.comparison-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ──────────────── Table ──────────────── */
+.comparison-table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.comparison-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-default);
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+}
+
+.comparison-table th:hover {
+  color: var(--text-secondary);
+}
+
+.comparison-table td {
+  padding: 10px 14px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.8rem;
+}
+
+.comparison-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.comparison-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.comparison-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Algorithm name column */
+.comparison-table td:first-child {
+  font-family: 'Geist', sans-serif;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Path Found column */
+.comparison-table .found-yes {
+  color: var(--accent);
+}
+
+.comparison-table .found-no {
+  color: var(--color-goal);
+}
+
+/* Best value highlight */
+.comparison-table .best-value {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Optimal row */
+.comparison-table .row-optimal {
+  background: var(--accent-dim) !important;
+}
+
+.comparison-table .row-optimal td:first-child::after {
+  content: ' *';
+  color: var(--accent);
+  font-size: 0.7rem;
+}
+
+/* ──────────────── Chart ──────────────── */
+.comparison-chart-container {
+  height: 260px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+#comparisonChart {
+  width: 100% !important;
+  height: 100% !important;
+}
