@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,8 @@
   <!-- Geist Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
@@ -19,15 +21,18 @@
   <link rel="stylesheet" href="css/controls.css">
   <link rel="stylesheet" href="css/comparison.css">
 </head>
+
 <body>
 
   <!-- ═══════════════════════════════════ HEADER ═══════════════════════════════════ -->
   <header class="app-header" id="appHeader">
     <div class="header-left">
       <div class="header-logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
         </svg>
       </div>
       <div class="header-title">
@@ -60,35 +65,71 @@
             <option value="bidirectional">Bidirectional BFS</option>
             <option value="ida_star">IDA*</option>
           </select>
-          <svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+          <svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M4 6l4 4 4-4" />
+          </svg>
         </div>
       </div>
 
-      <!-- Speed Slider -->
+      <!-- Start Search Button (right below algorithm) -->
       <div class="control-group">
-        <label class="control-label" for="speedSlider">
-          Speed
-          <span class="control-value mono" id="speedValue">150ms</span>
-        </label>
-        <input type="range" id="speedSlider" class="control-slider" min="50" max="500" value="150" step="10">
-        <div class="slider-labels">
-          <span>Fast</span>
-          <span>Slow</span>
-        </div>
+        <button class="btn btn-primary" id="btnStart">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          Start Search
+        </button>
       </div>
 
-      <!-- Grid Size -->
-      <div class="control-group">
-        <label class="control-label" for="gridSizeSelect">Grid Size</label>
-        <div class="select-wrapper">
-          <select id="gridSizeSelect" class="control-select">
-            <option value="10">10 x 10</option>
-            <option value="15">15 x 15</option>
-            <option value="20" selected>20 x 20</option>
-            <option value="25">25 x 25</option>
-            <option value="30">30 x 30</option>
-          </select>
-          <svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+      <div class="sidebar-divider"></div>
+
+      <!-- Playback Controls Group -->
+      <div class="control-group action-buttons">
+        <button class="btn btn-secondary" id="btnPause" disabled>
+          <svg class="pause-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="4" width="4" height="16" />
+            <rect x="14" y="4" width="4" height="16" />
+          </svg>
+          <svg class="resume-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
+            style="display:none;">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          <span class="pause-label">Pause</span>
+        </button>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary btn-small" id="btnPrev" disabled title="Previous Step">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="19 20 9 12 19 4 19 20" />
+              <rect x="5" y="4" width="2" height="16" />
+            </svg>
+          </button>
+          <button class="btn btn-secondary btn-small" id="btnNext" disabled title="Next Step">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 4 15 12 5 20 5 4" />
+              <rect x="17" y="4" width="2" height="16" />
+            </svg>
+          </button>
+          <button class="btn btn-secondary btn-small" id="btnReset" title="Reset">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Speed Slider (inside playback group) -->
+        <div class="speed-inline-group">
+          <label class="control-label" for="speedSlider">
+            Speed
+            <span class="control-value mono" id="speedValue">150ms</span>
+          </label>
+          <input type="range" id="speedSlider" class="control-slider" min="50" max="500" value="150" step="10">
+          <div class="slider-labels">
+            <span>Fast</span>
+            <span>Slow</span>
+          </div>
         </div>
       </div>
 
@@ -115,13 +156,18 @@
           </label>
           <label class="terrain-option" data-terrain="road">
             <input type="radio" name="terrain" value="road">
-            <span class="terrain-swatch" style="background: var(--color-road); border: 1px solid var(--border-default);"></span>
+            <span class="terrain-swatch"
+              style="background: var(--color-road); border: 1px solid var(--border-default);"></span>
             <span class="terrain-name">Road (1x)</span>
           </label>
           <label class="terrain-option" data-terrain="eraser">
             <input type="radio" name="terrain" value="eraser">
             <span class="terrain-swatch eraser-swatch">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><path d="M20 20H7L3 16l10-10 7 7-3 3"/><path d="M6 11l7 7"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)"
+                stroke-width="2">
+                <path d="M20 20H7L3 16l10-10 7 7-3 3" />
+                <path d="M6 11l7 7" />
+              </svg>
             </span>
             <span class="terrain-name">Eraser</span>
           </label>
@@ -134,7 +180,7 @@
       <div class="control-group">
         <label class="control-label">Placement</label>
         <div class="placement-buttons">
-          <button class="btn btn-placement active" id="btnPlaceStart" title="Click grid to place start">
+          <button class="btn btn-placement" id="btnPlaceStart" title="Click grid to place start">
             <span class="placement-dot" style="background: var(--color-start);"></span>
             Start
           </button>
@@ -147,45 +193,20 @@
 
       <div class="sidebar-divider"></div>
 
-      <!-- Action Buttons -->
-      <div class="control-group action-buttons">
-        <button class="btn btn-primary" id="btnStart">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Start Search
-        </button>
-
-        <button class="btn btn-secondary" id="btnPause" disabled>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-          Pause
-        </button>
-
-        <div class="btn-row">
-          <button class="btn btn-secondary btn-small" id="btnPrev" disabled title="Previous Step">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"/><rect x="5" y="4" width="2" height="16"/></svg>
-          </button>
-          <button class="btn btn-secondary btn-small" id="btnNext" disabled title="Next Step">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16"/></svg>
-          </button>
-          <button class="btn btn-secondary btn-small" id="btnReset" title="Reset">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="sidebar-divider"></div>
-
       <!-- Utility Buttons -->
       <div class="control-group">
-        <button class="btn btn-secondary" id="btnMaze">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h8v12M12 3v8h9"/></svg>
-          Generate Maze
-        </button>
         <button class="btn btn-secondary" id="btnClearGrid">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M5 6v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M8 6V4h8v2M5 6v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6" />
+          </svg>
           Clear Grid
         </button>
         <button class="btn btn-accent" id="btnCompare">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="12" width="4" height="9" />
+            <rect x="10" y="7" width="4" height="14" />
+            <rect x="17" y="3" width="4" height="18" />
+          </svg>
           Compare All
         </button>
       </div>
@@ -196,7 +217,7 @@
     <main class="main-content" id="mainContent">
 
       <!-- Grid Canvas Area -->
-      <div class="grid-area">
+      <div class="grid-area" id="gridArea">
         <div class="grid-container" id="gridContainer">
           <canvas id="gridCanvas"></canvas>
           <div class="grid-tooltip" id="gridTooltip"></div>
@@ -207,11 +228,14 @@
           <div class="legend-item"><span class="legend-color" style="background: var(--color-start);"></span>Start</div>
           <div class="legend-item"><span class="legend-color" style="background: var(--color-goal);"></span>Goal</div>
           <div class="legend-item"><span class="legend-color" style="background: var(--color-wall);"></span>Wall</div>
-          <div class="legend-item"><span class="legend-color" style="background: var(--color-road); border: 1px solid var(--border-default);"></span>Road</div>
+          <div class="legend-item"><span class="legend-color"
+              style="background: var(--color-road); border: 1px solid var(--border-default);"></span>Road</div>
           <div class="legend-item"><span class="legend-color" style="background: var(--color-grass);"></span>Grass</div>
           <div class="legend-item"><span class="legend-color" style="background: var(--color-swamp);"></span>Swamp</div>
-          <div class="legend-item"><span class="legend-color" style="background: var(--color-visited);"></span>Visited</div>
-          <div class="legend-item"><span class="legend-color" style="background: var(--color-frontier);"></span>Frontier</div>
+          <div class="legend-item"><span class="legend-color" style="background: var(--color-visited);"></span>Visited
+          </div>
+          <div class="legend-item"><span class="legend-color" style="background: var(--color-frontier);"></span>Frontier
+          </div>
           <div class="legend-item"><span class="legend-color" style="background: var(--color-path);"></span>Path</div>
         </div>
       </div>
@@ -252,7 +276,9 @@
         <div class="comparison-header">
           <h2>Algorithm Comparison</h2>
           <button class="btn btn-icon" id="btnCloseComparison" title="Close comparison">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
           </button>
         </div>
         <div class="comparison-body">
@@ -288,14 +314,24 @@
     <span class="loading-text mono">Running search...</span>
   </div>
 
-  <!-- Scripts -->
-  <script src="js/api.js"></script>
-  <script src="js/gridView.js"></script>
-  <script src="js/animator.js"></script>
-  <script src="js/statsPanel.js"></script>
-  <script src="js/comparisonView.js"></script>
-  <script src="js/controlPanel.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Scripts (auto cache-bust with timestamp) -->
+  <script>
+    (function () {
+      const t = Date.now();
+      const scripts = [
+        'js/api.js', 'js/gridView.js', 'js/animator.js',
+        'js/statsPanel.js', 'js/comparisonView.js',
+        'js/controlPanel.js', 'js/app.js'
+      ];
+      scripts.forEach(src => {
+        const s = document.createElement('script');
+        s.src = src + '?t=' + t;
+        s.async = false;
+        document.body.appendChild(s);
+      });
+    })();
+  </script>
 
 </body>
+
 </html>

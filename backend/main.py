@@ -4,7 +4,6 @@ FastAPI backend for the AI Search Algorithm Visualizer.
 Provides endpoints to:
 - Run a single search algorithm with step-by-step visualization data
 - Compare all 8 algorithms on the same grid
-- Generate random mazes with terrain variety
 - Serve the frontend static files
 
 Start with: uvicorn main:app --reload --port 8000
@@ -22,11 +21,9 @@ from models.grid import Grid
 from models.schemas import (
     SearchRequest, SearchResponse, SearchResultResponse, StepResponse,
     CompareRequest, CompareResponse,
-    MazeGenerateRequest, MazeResponse,
     ErrorResponse,
 )
 from algorithms import ALGORITHM_MAP
-from utils.maze_generator import generate_maze
 
 
 # ─── App Setup ─────────────────────────────────────────────────────
@@ -166,27 +163,6 @@ async def compare_algorithms(request: CompareRequest):
     return CompareResponse(success=True, results=results)
 
 
-@app.post("/api/maze/generate", response_model=MazeResponse)
-async def generate_maze_endpoint(request: MazeGenerateRequest):
-    """
-    Generate a random maze with optional terrain variety.
-
-    Returns the grid data along with start and goal positions.
-    """
-    grid_data, start, goal = generate_maze(
-        width=request.width,
-        height=request.height,
-        wall_density=request.wall_density,
-        terrain_variety=request.terrain_variety,
-    )
-
-    return MazeResponse(
-        success=True,
-        grid=grid_data,
-        start=start,
-        goal=goal,
-    )
-
 # Frontend directory path
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 
@@ -231,5 +207,5 @@ if FRONTEND_DIR.exists():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, reload_includes=["*.html", "*.css", "*.js"])
 

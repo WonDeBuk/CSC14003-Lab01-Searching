@@ -31,22 +31,5 @@ const api = {
         }
         const data = await res.json();
         return data.results;
-    },
-
-    async generateMaze(width = 20, height = 20, wallDensity = 0.3) {
-        const res = await fetch(`${this.BASE}/api/maze/generate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                width, height,
-                wall_density: wallDensity,
-                terrain_variety: true,
-            }),
-        });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({ detail: res.statusText }));
-            throw new Error(err.detail || 'Maze generation failed');
-        }
-        return res.json();
     }
 };

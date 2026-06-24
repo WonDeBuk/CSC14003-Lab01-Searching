@@ -32,6 +32,9 @@ class GridView {
             0: '#1e293b', 1: '#14532d', 2: '#451a03', 3: '#374151',
         };
 
+        this.isInteractive = true;
+        this.onGridModified = null;
+
         this._resizeCanvas();
         this._bindEvents();
     }
@@ -52,12 +55,14 @@ class GridView {
 
     _bindEvents() {
         this.canvas.addEventListener('mousedown', (e) => {
+            if (!this.isInteractive) return;
             if (e.button === 2) return;
             this.isDragging = true;
             this._handleClick(e);
         });
         this.canvas.addEventListener('mousemove', (e) => {
             this._updateTooltip(e);
+            if (!this.isInteractive) return;
             if (this.isDragging) this._handleClick(e);
         });
         this.canvas.addEventListener('mouseup', () => this.isDragging = false);
@@ -67,6 +72,7 @@ class GridView {
         });
         this.canvas.addEventListener('contextmenu', (e) => {
             e.preventDefault();
+            if (!this.isInteractive) return;
             const cell = this._cellAt(e);
             if (cell) { this._erase(cell.r, cell.c); }
         });
@@ -86,30 +92,47 @@ class GridView {
         if (!cell) return;
         const { r, c } = cell;
 
+        let modified = false;
+
         if (this.placementMode === 'start') {
+            if (!this.start || this.start[0] !== r || this.start[1] !== c) modified = true;
+            if (this.goal && this.goal[0] === r && this.goal[1] === c) this.goal = null;
             this.start = [r, c];
             this.gridData[r][c] = 0;
-            this.placementMode = null;
+            // Keep placementMode — user must manually switch
         } else if (this.placementMode === 'goal') {
+            if (!this.goal || this.goal[0] !== r || this.goal[1] !== c) modified = true;
+            if (this.start && this.start[0] === r && this.start[1] === c) this.start = null;
             this.goal = [r, c];
             this.gridData[r][c] = 0;
-            this.placementMode = null;
+            // Keep placementMode — user must manually switch
         } else {
             const map = { wall: 3, grass: 1, swamp: 2, road: 0 };
             if (this.terrainBrush === 'eraser') {
                 this._erase(r, c);
                 return;
             }
-            this.gridData[r][c] = map[this.terrainBrush] ?? 3;
+            const val = map[this.terrainBrush] ?? 3;
+            if (this.gridData[r][c] !== val || (this.start && this.start[0] === r && this.start[1] === c) || (this.goal && this.goal[0] === r && this.goal[1] === c)) {
+                modified = true;
+            }
+            if (this.start && this.start[0] === r && this.start[1] === c) this.start = null;
+            if (this.goal && this.goal[0] === r && this.goal[1] === c) this.goal = null;
+            this.gridData[r][c] = val;
         }
         this.draw();
+        if (modified && this.onGridModified) this.onGridModified();
     }
 
     _erase(r, c) {
-        if (this.start && this.start[0] === r && this.start[1] === c) this.start = null;
-        if (this.goal && this.goal[0] === r && this.goal[1] === c) this.goal = null;
+        let modified = false;
+        if (this.start && this.start[0] === r && this.start[1] === c) { this.start = null; modified = true; }
+        if (this.goal && this.goal[0] === r && this.goal[1] === c) { this.goal = null; modified = true; }
+        if (this.gridData[r][c] !== 0) { this.gridData[r][c] = 0; modified = true; }
+        
         this.gridData[r][c] = 0;
         this.draw();
+        if (modified && this.onGridModified) this.onGridModified();
     }
 
     _updateTooltip(e) {
@@ -128,9 +151,10 @@ class GridView {
         }
         tooltip.textContent = text;
         tooltip.style.display = 'block';
-        const rect = this.canvas.getBoundingClientRect();
-        tooltip.style.left = (e.clientX - rect.left + 14) + 'px';
-        tooltip.style.top = (e.clientY - rect.top - 28) + 'px';
+        
+        const containerRect = this.container.getBoundingClientRect();
+        tooltip.style.left = (e.clientX - containerRect.left + 14) + 'px';
+        tooltip.style.top = (e.clientY - containerRect.top - 28) + 'px';
     }
 
     _hideTooltip() {

@@ -15,24 +15,22 @@ class App {
         this.comparisonView = new ComparisonView();
         this.loadingOverlay = document.getElementById('loadingOverlay');
 
+        // Grid & stats area elements (for show/hide on comparison)
+        this.gridArea = document.getElementById('gridArea');
+        this.statsBar = document.getElementById('statsBar');
+
         // Wire control panel
         this.controlPanel = new ControlPanel({
             onStart: () => this.startSearch(),
             onPause: () => this.pauseSearch(),
+            onResume: () => this.resumeSearch(),
             onNextStep: () => this.nextStep(),
             onPrevStep: () => this.prevStep(),
             onReset: () => this.resetSearch(),
-            onMaze: () => this.generateMaze(),
             onClearGrid: () => this.clearGrid(),
             onCompare: () => this.compareAll(),
             onAlgorithmChange: () => { if (this.animator.isPlaying) this.animator.pause(); },
             onSpeedChange: (speed) => this.animator.setSpeed(speed),
-            onGridSizeChange: (size) => {
-                this.gridView.setSize(size, size);
-                this.statsPanel.reset();
-                this.controlPanel.setIdleState();
-                this.controlPanel.setStatus('Ready');
-            },
             onTerrainChange: (terrain) => {
                 this.gridView.terrainBrush = terrain;
                 this.gridView.placementMode = null;
@@ -41,6 +39,13 @@ class App {
                 this.gridView.placementMode = mode;
             },
         });
+
+        // Grid modification callback
+        this.gridView.onGridModified = () => {
+            if (this.animator.hasData) {
+                this.resetSearch();
+            }
+        };
 
         // Wire animator callbacks
         this.animator.onStepChanged = (current, total, step) => {
@@ -51,10 +56,18 @@ class App {
             this.controlPanel.setPlayingState(false);
             this.controlPanel.setDataLoaded(true);
             this.controlPanel.setStatus(result?.path_found ? 'Path Found' : 'No Path');
+            this.setInteractive(true);
         };
         this.animator.onStateChanged = (isPlaying) => {
-            this.controlPanel.setPlayingState(isPlaying);
-            this.controlPanel.setStatus(isPlaying ? 'Searching...' : 'Paused');
+            if (isPlaying) {
+                this.controlPanel.setPlayingState(true);
+                this.controlPanel.setStatus('Searching...');
+                this.setInteractive(false);
+            } else {
+                // Paused (not finished) — show Resume
+                this.controlPanel.setPausedState();
+                this.controlPanel.setStatus('Paused');
+            }
         };
 
         // Set initial speed
@@ -70,13 +83,12 @@ class App {
 
     // ─── Search Flow ─────────────────────────────────────
 
-    async startSearch() {
-        // Resume if paused
-        if (this.animator.hasData && !this.animator.isFinished) {
-            this.animator.play();
-            return;
-        }
+    setInteractive(interactive) {
+        this.gridView.isInteractive = interactive;
+        this.controlPanel.setInteractive(interactive);
+    }
 
+    async startSearch() {
         const { grid, start, goal } = this.gridView.exportGrid();
         if (!start || !goal) {
             this.controlPanel.setStatus('Place start & goal first');
@@ -86,6 +98,7 @@ class App {
         const algorithm = this.controlPanel.getAlgorithm();
         this.showLoading(true);
         this.controlPanel.setStatus('Running...');
+        this.setInteractive(false);
 
         try {
             const result = await api.search(grid, start, goal, algorithm);
@@ -98,12 +111,19 @@ class App {
         } catch (err) {
             this.showLoading(false);
             this.controlPanel.setStatus('Error');
+            this.setInteractive(true);
             console.error('Search failed:', err);
             alert('Search failed: ' + err.message);
         }
     }
 
     pauseSearch() { this.animator.pause(); }
+    resumeSearch() {
+        if (this.animator.hasData && !this.animator.isFinished) {
+            this.animator.play();
+            return;
+        }
+    }
     nextStep() { if (this.animator.hasData) this.animator.nextStep(); }
     prevStep() { if (this.animator.hasData) this.animator.prevStep(); }
 
@@ -112,59 +132,18 @@ class App {
         this.statsPanel.reset();
         this.controlPanel.setIdleState();
         this.controlPanel.setStatus('Ready');
-    }
-
-    // ─── Maze Generation ─────────────────────────────────
-
-    async generateMaze() {
-        const size = this.controlPanel.getGridSize();
-        this.showLoading(true);
-        this.controlPanel.setStatus('Generating maze...');
-
-        try {
-            const data = await api.generateMaze(size, size, 0.3);
-            this.gridView.loadGrid(data.grid, data.start, data.goal);
-            this.statsPanel.reset();
-            this.controlPanel.setIdleState();
-            this.controlPanel.setStatus('Maze generated');
-            this.showLoading(false);
-        } catch (err) {
-            this.showLoading(false);
-            console.error('Maze generation failed:', err);
-            // Fallback local maze
-            this._localMaze(size);
-            this.controlPanel.setStatus('Local maze generated');
-        }
-    }
-
-    _localMaze(size) {
-        const grid = [];
-        for (let r = 0; r < size; r++) {
-            grid[r] = [];
-            for (let c = 0; c < size; c++) {
-                const rand = Math.random();
-                if (rand < 0.25) grid[r][c] = 3;       // wall
-                else if (rand < 0.35) grid[r][c] = 1;   // grass
-                else if (rand < 0.40) grid[r][c] = 2;   // swamp
-                else grid[r][c] = 0;                     // road
-            }
-        }
-        const start = [0, 0];
-        const goal = [size - 1, size - 1];
-        grid[0][0] = 0;
-        grid[size - 1][size - 1] = 0;
-        this.gridView.loadGrid(grid, start, goal);
-        this.statsPanel.reset();
-        this.controlPanel.setIdleState();
+        this.setInteractive(true);
     }
 
     // ─── Grid Management ─────────────────────────────────
 
     clearGrid() {
+        this.animator.reset();
         this.gridView.clearGrid();
         this.statsPanel.reset();
         this.controlPanel.setIdleState();
         this.controlPanel.setStatus('Grid cleared');
+        this.setInteractive(true);
     }
 
     // ─── Compare All ─────────────────────────────────────
@@ -178,18 +157,30 @@ class App {
 
         this.showLoading(true);
         this.controlPanel.setStatus('Comparing algorithms...');
+        this.setInteractive(false);
 
         try {
             const results = await api.compare(grid, start, goal);
+            // Hide grid and stats when showing comparison
+            if (this.gridArea) this.gridArea.style.display = 'none';
+            if (this.statsBar) this.statsBar.style.display = 'none';
             this.comparisonView.render(results);
             this.showLoading(false);
             this.controlPanel.setStatus('Comparison complete');
+            this.setInteractive(true);
         } catch (err) {
             this.showLoading(false);
             this.controlPanel.setStatus('Error');
+            this.setInteractive(true);
             console.error('Comparison failed:', err);
             alert('Comparison failed: ' + err.message);
         }
+    }
+
+    /** Show grid and stats again (called when closing comparison) */
+    showGridAndStats() {
+        if (this.gridArea) this.gridArea.style.display = '';
+        if (this.statsBar) this.statsBar.style.display = '';
     }
 
     // ─── Utilities ───────────────────────────────────────
@@ -200,6 +191,11 @@ class App {
 }
 
 // ─── Bootstrap ───────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.app = new App();
+    });
+} else {
+    // DOM already parsed (scripts loaded dynamically)
     window.app = new App();
-});
+}

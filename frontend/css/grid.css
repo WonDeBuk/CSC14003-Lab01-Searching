@@ -24,14 +24,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  max-width: 100%;
+  width: 100%;
   flex: 1;
   min-height: 0;
 }
 
 #gridCanvas {
   display: block;
-  border-radius: var(--radius-md);
   image-rendering: pixelated;
   cursor: crosshair;
 }

@@ -1,6 +1,7 @@
 /**
  * Comparison View.
  * Renders comparison table and Chart.js bar chart for algorithm performance.
+ * Uses logarithmic scale to handle extreme outliers like IDDFS.
  */
 class ComparisonView {
     constructor() {
@@ -36,8 +37,8 @@ class ComparisonView {
                 <td>${r.path_found ? '<span class="found-yes">Yes</span>' : '<span class="found-no">No</span>'}</td>
                 <td class="${isBestCost ? 'best-value' : ''}">${r.path_found ? r.path_cost.toFixed(1) : 'N/A'}</td>
                 <td>${r.path_found ? r.path.length : 'N/A'}</td>
-                <td class="${isBestExplored ? 'best-value' : ''}">${r.nodes_explored}</td>
-                <td>${r.max_frontier_size}</td>
+                <td class="${isBestExplored ? 'best-value' : ''}">${r.nodes_explored.toLocaleString()}</td>
+                <td>${r.max_frontier_size.toLocaleString()}</td>
                 <td class="${isBestTime ? 'best-value' : ''}">${r.execution_time_ms.toFixed(3)}</td>
             `;
             this.tbody.appendChild(tr);
@@ -57,6 +58,11 @@ class ComparisonView {
         const labels = results.map(r => r.algorithm_name);
         const explored = results.map(r => r.nodes_explored);
         const costs = results.map(r => r.path_found ? r.path_cost : 0);
+
+        // Check if we need log scale — if max/min ratio is very large
+        const maxExplored = Math.max(...explored);
+        const minExplored = Math.min(...explored.filter(v => v > 0));
+        const useLogScale = maxExplored / minExplored > 50;
 
         this.chart = new Chart(this.chartCanvas, {
             type: 'bar',
@@ -82,9 +88,21 @@ class ComparisonView {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 plugins: {
                     legend: {
                         labels: { color: '#8892a6', font: { family: "'Geist', sans-serif" } },
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed.y;
+                                return `${context.dataset.label}: ${value.toLocaleString()}`;
+                            }
+                        }
                     },
                 },
                 scales: {
@@ -93,7 +111,22 @@ class ComparisonView {
                         grid: { color: 'rgba(255,255,255,0.05)' },
                     },
                     y: {
-                        ticks: { color: '#8892a6', font: { family: "'Geist Mono', monospace", size: 11 } },
+                        type: useLogScale ? 'logarithmic' : 'linear',
+                        ticks: {
+                            color: '#8892a6',
+                            font: { family: "'Geist Mono', monospace", size: 11 },
+                            callback: function(value) {
+                                // For log scale, only show clean numbers
+                                if (useLogScale) {
+                                    const log10 = Math.log10(value);
+                                    if (Number.isInteger(log10) || value === 1 || value === 5 || value === 50 || value === 500) {
+                                        return value.toLocaleString();
+                                    }
+                                    return '';
+                                }
+                                return value.toLocaleString();
+                            }
+                        },
                         grid: { color: 'rgba(255,255,255,0.05)' },
                     },
                 },
@@ -103,5 +136,9 @@ class ComparisonView {
 
     hide() {
         this.section.style.display = 'none';
+        // Restore grid and stats when closing comparison
+        if (window.app) {
+            window.app.showGridAndStats();
+        }
     }
 }

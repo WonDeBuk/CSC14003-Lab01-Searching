@@ -51,20 +51,6 @@ class CompareRequest(BaseModel):
     )
 
 
-class MazeGenerateRequest(BaseModel):
-    """Request body for generating a random maze."""
-    width: int = Field(default=20, ge=5, le=50, description="Grid width")
-    height: int = Field(default=20, ge=5, le=50, description="Grid height")
-    wall_density: float = Field(
-        default=0.3, ge=0.0, le=0.8,
-        description="Fraction of cells that are walls (0.0 to 0.8)"
-    )
-    terrain_variety: bool = Field(
-        default=True,
-        description="Whether to include grass/swamp terrain"
-    )
-
-
 # ─── Response Schemas ──────────────────────────────────────────────
 
 class StepResponse(BaseModel):
@@ -114,14 +100,6 @@ class CompareResponse(BaseModel):
     """Top-level response for comparing all algorithms."""
     success: bool = True
     results: List[SearchResultResponse]
-
-
-class MazeResponse(BaseModel):
-    """Response for maze generation."""
-    success: bool = True
-    grid: List[List[int]]
-    start: List[int]
-    goal: List[int]
 
 
 class ErrorResponse(BaseModel):
